@@ -1,37 +1,44 @@
 #include "lab.h"
 
-// Função para encontrar o comprimento de uma string personalizada
+// Função para calcular o comprimento de uma string personalizada
 size_t meu_strlen(const char *str) {
-    size_t length = 0;
-    while (str[length] != '\0') {
-        length++;
+    size_t len = 0;
+    while (str[len] != '\0') {
+        len++;
     }
-    return length;
+    return len;
 }
+
 
 // Função para remover a quebra de linha de uma string lida com fgets
 void removerQuebraLinha(char *str) {
-    size_t length = customStrLen(str);
-    if (length > 0 && str[length - 1] == '\n') {
-        str[length - 1] = '\0';
+    size_t len = meu_strlen(str);
+    if (len > 0 && str[len - 1] == '\n') {
+        str[len - 1] = '\0';
     }
 }
 
-// Criando a opção de cadastrar as tarefas
+// Função para cadastrar uma tarefa em um arquivo
 void cadastrarTarefa(FILE *arquivo) {
     struct Tarefa novaTarefa;
 
+    // Captura os detalhes da nova tarefa
     printf("Digite a prioridade da nova tarefa (entre 0 e 10): ");
     scanf("%d", &novaTarefa.prioridade);
     getchar(); // Consumir o caractere de nova linha deixado pelo scanf
 
     printf("Digite a descricao da nova tarefa (ate 300 caracteres): ");
     fgets(novaTarefa.descricao, sizeof(novaTarefa.descricao), stdin);
-    removeNewLine(novaTarefa.descricao);
+    removerQuebraLinha(novaTarefa.descricao);
 
     printf("Digite a categoria da nova tarefa (ate 100 caracteres): ");
     fgets(novaTarefa.categoria, sizeof(novaTarefa.categoria), stdin);
-    removeNewLine(novaTarefa.categoria);
+    removerQuebraLinha(novaTarefa.categoria);
+
+    // Adicionando o estado da tarefa
+    printf("Digite o estado da nova tarefa (completo, em andamento, nao iniciado): ");
+    fgets(novaTarefa.estado, sizeof(novaTarefa.estado), stdin);
+    removerQuebraLinha(novaTarefa.estado);
 
     // Voltar para o final do arquivo antes de escrever uma nova tarefa
     fseek(arquivo, 0, SEEK_END);
@@ -45,7 +52,7 @@ void cadastrarTarefa(FILE *arquivo) {
     printf("Nova tarefa cadastrada com sucesso!\n");
 }
 
-// Criando a opção de listar as tarefas
+// Função para listar tarefas armazenadas em um arquivo
 void listarTarefas(FILE *arquivo) {
     struct Tarefa tarefa;
 
@@ -65,6 +72,7 @@ void listarTarefas(FILE *arquivo) {
         printf("Prioridade: %d\n", tarefa.prioridade);
         printf("Descricao: %s\n", tarefa.descricao);
         printf("Categoria: %s\n", tarefa.categoria);
+        printf("Estado: %s\n", tarefa.estado);
         printf("\n");
     }
 
@@ -72,7 +80,7 @@ void listarTarefas(FILE *arquivo) {
     fclose(arquivo);
 }
 
-// Criando a opção de deletar as tarefas
+// Função para deletar uma tarefa de um arquivo
 void deletarTarefa(FILE *arquivo) {
     int prioridade;
 
@@ -160,4 +168,54 @@ void deletarTarefa(FILE *arquivo) {
     rename("temporario.dat", "tarefas.dat");
 
     printf("Tarefa deletada com sucesso!\n");
+}
+
+// Função para modificar o estado de uma tarefa
+void modificarEstado(FILE *arquivo) {
+    int prioridade;
+
+    printf("Digite a prioridade da tarefa que deseja modificar: ");
+    scanf("%d", &prioridade);
+
+    struct Tarefa tarefa;
+    int tarefaEncontrada = 0; // Flag para indicar se a tarefa foi encontrada
+
+    // Fechar o arquivo antes de reabri-lo para garantir que as alterações sejam reconhecidas
+    fclose(arquivo);
+
+    // Reabrir o arquivo no modo de leitura e escrita
+    arquivo = fopen("tarefas.dat", "rb+");
+    if (arquivo == NULL) {
+        perror("Erro ao reabrir arquivo original");
+        return;
+    }
+
+    // Ler as tarefas do arquivo original e procurar a tarefa a ser modificada
+    while (fread(&tarefa, sizeof(struct Tarefa), 1, arquivo) == 1) {
+        if (tarefa.prioridade == prioridade) {
+            tarefaEncontrada = 1; // Tarefa encontrada
+            printf("Tarefa com prioridade %d encontrada.\n", prioridade);
+
+            // Captura o novo estado da tarefa
+            printf("Digite o novo estado da tarefa (completo, em andamento, nao iniciado): ");
+            getchar(); // Consumir o caractere de nova linha deixado pelo scanf
+            fgets(tarefa.estado, sizeof(tarefa.estado), stdin);
+            removerQuebraLinha(tarefa.estado);
+
+            // Voltar para a posição correta no arquivo antes de escrever as modificações
+            fseek(arquivo, -sizeof(struct Tarefa), SEEK_CUR);
+            fwrite(&tarefa, sizeof(struct Tarefa), 1, arquivo);
+            fflush(arquivo);
+
+            printf("Estado da tarefa modificado com sucesso!\n");
+            break;
+        }
+    }
+
+    // Se a tarefa não foi encontrada, exibir uma mensagem
+    if (!tarefaEncontrada) {
+        printf("Tarefa com prioridade %d nao encontrada.\n", prioridade);
+    }
+
+    fclose(arquivo);
 }
