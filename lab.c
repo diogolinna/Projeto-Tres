@@ -9,7 +9,6 @@ size_t meu_strlen(const char *str) {
     return len;
 }
 
-
 // Função para remover a quebra de linha de uma string lida com fgets
 void removerQuebraLinha(char *str) {
     size_t len = meu_strlen(str);
