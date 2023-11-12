@@ -8,7 +8,7 @@ struct Tarefa {
     int prioridade;
     char descricao[300];
     char categoria[100];
-    char estado[20]; // Adicionando o campo de estado da tarefa
+    char estado[20]; // Adicionando o campo "estado" para armazenar o estado da tarefa
 };
 
 // Função para calcular o comprimento de uma string
@@ -26,7 +26,7 @@ void listarTarefas(FILE *arquivo);
 // Função para deletar uma tarefa de um arquivo
 void deletarTarefa(FILE *arquivo);
 
-// Função para modificar o estado de uma tarefa
-void modificarEstado(FILE *arquivo);
+// Função para alterar uma tarefa
+void alterarTarefa(FILE *arquivo);
 
 #endif // LAB_H
