@@ -3,6 +3,8 @@
 
 int main() {
     FILE *arquivo;
+
+    // Abre o arquivo no modo de leitura e gravação
     arquivo = fopen("tarefas.dat", "ab+");
     if (arquivo == NULL) {
         perror("Erro ao abrir arquivo de tarefas");
@@ -12,11 +14,12 @@ int main() {
     int opcao;
 
     do {
-        printf("Menu:\n");
+        printf("\nMenu:\n");
         printf("1. Cadastrar Tarefa\n");
         printf("2. Listar Tarefas\n");
         printf("3. Deletar Tarefa\n");
-        printf("4. Sair\n");
+        printf("4. Modificar Estado da Tarefa\n");
+        printf("5. Sair\n");
         printf("Escolha uma opcao: ");
         scanf("%d", &opcao);
 
@@ -31,12 +34,15 @@ int main() {
                 deletarTarefa(arquivo);
                 break;
             case 4:
-                printf("Saindo do programa.\n");
+                modificarEstado(arquivo);
+                break;
+            case 5:
+                printf("Saindo do programa. Obrigado!\n");
                 break;
             default:
-                printf("Opção inválida. Tente novamente.\n");
+                printf("Opcao invalida. Tente novamente.\n");
         }
-    } while (opcao != 4);
+    } while (opcao != 5);
 
     fclose(arquivo);
 
