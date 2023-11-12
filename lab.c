@@ -9,7 +9,6 @@ size_t meu_strlen(const char *str) {
     return len;
 }
 
-
 // Função para remover a quebra de linha de uma string lida com fgets
 void removerQuebraLinha(char *str) {
     size_t len = meu_strlen(str);
@@ -170,11 +169,11 @@ void deletarTarefa(FILE *arquivo) {
     printf("Tarefa deletada com sucesso!\n");
 }
 
-// Função para modificar o estado de uma tarefa
-void modificarEstado(FILE *arquivo) {
+// Função para alterar uma tarefa
+void alterarTarefa(FILE *arquivo) {
     int prioridade;
 
-    printf("Digite a prioridade da tarefa que deseja modificar: ");
+    printf("Digite a prioridade da tarefa que deseja alterar: ");
     scanf("%d", &prioridade);
 
     struct Tarefa tarefa;
@@ -190,24 +189,58 @@ void modificarEstado(FILE *arquivo) {
         return;
     }
 
-    // Ler as tarefas do arquivo original e procurar a tarefa a ser modificada
+    // Ler as tarefas do arquivo original e procurar a tarefa a ser alterada
     while (fread(&tarefa, sizeof(struct Tarefa), 1, arquivo) == 1) {
         if (tarefa.prioridade == prioridade) {
             tarefaEncontrada = 1; // Tarefa encontrada
             printf("Tarefa com prioridade %d encontrada.\n", prioridade);
 
-            // Captura o novo estado da tarefa
-            printf("Digite o novo estado da tarefa (completo, em andamento, nao iniciado): ");
-            getchar(); // Consumir o caractere de nova linha deixado pelo scanf
-            fgets(tarefa.estado, sizeof(tarefa.estado), stdin);
-            removerQuebraLinha(tarefa.estado);
+            int opcaoCampo;
+
+            // Exibir opções para o usuário escolher qual campo alterar
+            printf("Escolha o campo que deseja alterar:\n");
+            printf("1. Prioridade\n");
+            printf("2. Descrição\n");
+            printf("3. Categoria\n");
+            printf("4. Estado\n");
+            printf("Escolha uma opção: ");
+            scanf("%d", &opcaoCampo);
+
+            // Consumir o caractere de nova linha deixado pelo scanf
+            getchar();
+
+            // Dependendo da escolha do usuário, solicitar o novo valor
+            switch (opcaoCampo) {
+                case 1:
+                    printf("Digite a nova prioridade: ");
+                    scanf("%d", &tarefa.prioridade);
+                    break;
+                case 2:
+                    printf("Digite a nova descrição: ");
+                    fgets(tarefa.descricao, sizeof(tarefa.descricao), stdin);
+                    removerQuebraLinha(tarefa.descricao);
+                    break;
+                case 3:
+                    printf("Digite a nova categoria: ");
+                    fgets(tarefa.categoria, sizeof(tarefa.categoria), stdin);
+                    removerQuebraLinha(tarefa.categoria);
+                    break;
+                case 4:
+                    printf("Digite o novo estado: ");
+                    fgets(tarefa.estado, sizeof(tarefa.estado), stdin);
+                    removerQuebraLinha(tarefa.estado);
+                    break;
+                default:
+                    printf("Opção inválida.\n");
+                    break;
+            }
 
             // Voltar para a posição correta no arquivo antes de escrever as modificações
             fseek(arquivo, -sizeof(struct Tarefa), SEEK_CUR);
             fwrite(&tarefa, sizeof(struct Tarefa), 1, arquivo);
             fflush(arquivo);
 
-            printf("Estado da tarefa modificado com sucesso!\n");
+            printf("Tarefa alterada com sucesso!\n");
             break;
         }
     }
